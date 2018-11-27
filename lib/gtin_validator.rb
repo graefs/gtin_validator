@@ -3,31 +3,21 @@ require "gtin_validator/version"
 module GtinValidator
   class << self
     def valid_gtin?(number)
-      number = number.to_s.reverse # Transform the number into String to invert.
-      return false unless [8,12,13,14].include? number.length
-      odds = evens = 0
-
-      # Skip the first number (check digit)
-      (1..number.length - 1).each do |n|
-        # Add number to evens or odds
-        n.even? ? (evens += number[n].chr.to_i) : (odds += number[n].chr.to_i)
-      end
-
-      # Check if check digit == result of check digit operation
-      number[0].chr.to_i == ((10 - ((odds * 3) + evens)) % 10)
+      number = number.digits # Create an array of digits (reverse is not needed since Enumerable#digits extracts from right to left)
+      return false unless [8,12,13,14].include? number.size
+      
+      chr, *ary = number
+      evens, odds = ary.partition.with_index(1) { |_, i| i.even? } # Split array in two based on index even / odd
+      chr == ((10 - ((odds.sum * 3) + evens.sum)) % 10)
     end
 
     def calculate_checkdigit(number)
-      number = number.to_s.reverse
-      return false unless [7,11,12,13].include? number.length
-      odds = evens = 0
-
-      (0..number.length - 1).each do |n|
-        i = n + 1
-        i.even? ? (evens += number[n].chr.to_i) : (odds += number[n].chr.to_i)
-      end
-
-      ((10 - ((odds * 3) + evens)) % 10)
+      number = number.digits
+      return false unless [7,11,12,13].include? number.size
+      
+      chr, *ary = number
+      evens, odds = ary.partition.with_index { |_, i| i.even? } # Split array in two based on index even / odd
+      ((10 - ((odds.sum * 3) + evens.sum)) % 10)
     end
 
     def what_gtin_is?(number)
