@@ -3,8 +3,8 @@ require "gtin_validator/version"
 module GtinValidator
   class << self
     def valid_gtin?(number)
-      number = number.digits # Create an array of digits (reverse is not needed since Enumerable#digits extracts from right to left)
       return false unless [8,12,13,14].include? number.size
+      number = number.to_i.digits # Create an array of digits (reverse is not needed since Enumerable#digits extracts from right to left)
       
       chr, *ary = number
       evens, odds = ary.partition.with_index(1) { |_, i| i.even? } # Split array in two based on index even / odd
@@ -12,10 +12,10 @@ module GtinValidator
     end
 
     def calculate_checkdigit(number)
-      number = number.digits
       return false unless [7,11,12,13].include? number.size
+      number = number.to_i.digits
       
-      chr, *ary = number
+      _chr, *ary = number
       evens, odds = ary.partition.with_index { |_, i| i.even? } # Split array in two based on index even / odd
       ((10 - ((odds.sum * 3) + evens.sum)) % 10)
     end
